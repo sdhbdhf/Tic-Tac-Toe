@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <style>
+        .game{
+            /* border: 2px solid; */
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+            grid-template-rows: repeat(3,1fr);
+            width: 20vw;
+            row-gap: 5px;
+            
+            
+        }
+        .box{
+            border-radius: 6px;
+            width: 5rem;
+            height: 5rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Start To Win</h1>
+    <div class="container">
+        <div class="game">
+            <button class="box box1"></button>
+            <button class="box box2"></button>
+            <button class="box box3"></button>
+            <button class="box box4"></button>
+            <button class="box box5"></button>
+            <button class="box box6"></button>
+            <button class="box box7"></button>
+            <button class="box box8"></button>
+            <button class="box box9"></button>
+        </div>
+    </div>
+    <main>
+    <div id="button">
+        <button id="Aifriend">
+            Play W AI
+        </button>
+        <button id="reset">
+            Reset
+        </button>
+        <button id="new-button">
+            Multi Player
+        </button>
+    </div>
+    <div class="messagecontainer">
+        <p id="msg"></p>
+        <input type="text" id="choice">
+        <input type="button" value="Select" id="choicesubmit">
+    </div>
+    </main>
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+            let boxes = document.querySelectorAll(".box");
+            let resetbtn = document.querySelector('#reset');
+            let newmultiplayer = document.querySelector('#new-button');
+            let messagecontainer = document.querySelector('.messagecontainer');
+            let msg = document.querySelector('#msg');
+            let aigammer = document.querySelector('#Aifriend');
+            let turnO = true; // by default O starts
+            let isAIEnabled = false;
+
+            const winnerPattern = [
+                [0, 1, 2],
+                [0, 3, 6],
+                [0, 4, 8],
+                [1, 4, 7],
+                [2, 5, 8],
+                [2, 4, 6],
+                [3, 4, 5],
+                [6, 7, 8]
+            ];
+
+            // Start multiplayer
+            function choicestart() {
+                msg.innerText = "Which one should start first: O or X\nEnter\n1: For O\n2: For X";
+                let choicebutton = document.querySelector('#choicesubmit');
+                choicebutton.addEventListener('click', () => {
+                    let response = document.querySelector('#choice').value.trim();
+                    if (response === "1") {
+                        turnO = true;
+                        msg.innerText = 'Player O starts!';
+                    } else if (response === "2") {
+                        turnO = false;
+                        msg.innerText = 'Player X starts!';
+                    } else {
+                        msg.innerText = 'Please enter a valid number: 1 for O or 2 for X';
+                    }
+                });
+            }
+
+            // Start AI game
+            function aiStartGame() {
+                isAIEnabled = true;
+                msg.innerText = "Player O starts, AI will play as X.";
+                enableBoxes();
+                turnO = true;
+            }
+
+            // Multiplayer Mode
+            newmultiplayer.addEventListener("click", choicestart);
+
+            // AI Mode
+            aigammer.addEventListener("click", aiStartGame);
+
+            // Handle clicks for boxes
+            boxes.forEach((box) => {
+                box.addEventListener('click', function () {
+                    if (turnO) {
+                        box.innerText = "O";
+                        box.style.color = 'Blue';
+                        turnO = false;
+                        box.disabled = true;
+                        checkWinner();
+
+                        if (isAIEnabled) {
+                            setTimeout(aiPlay, 500); // AI moves after 0.5 sec
+                        }
+                    } else {
+                        box.innerText = 'X';
+                        box.style.color = 'Purple';
+                        turnO = true;
+                        box.disabled = true;
+                        checkWinner();
+                    }
+                });
+            });
+
+            const enableBoxes = () => {
+                for (let box of boxes) {
+                    box.disabled = false;
+                    box.innerText = '';
+                }
+            };
+
+            const disableBoxes = () => {
+                for (let box of boxes) {
+                    box.disabled = true;
+                }
+            };
+
+            const showWinner = (winner) => {
+                msg.innerText = `Congratulations, The winner is ${winner}`;
+                messagecontainer.classList.remove('hide');
+                disableBoxes();
+            };
+
+            const checkWinner = () => {
+                let eitherwin = false;
+                for (let pattern of winnerPattern) {
+                    let positionvalue1 = boxes[pattern[0]].innerText;
+                    let positionvalue2 = boxes[pattern[1]].innerText;
+                    let positionvalue3 = boxes[pattern[2]].innerText;
+
+                    if (positionvalue1 !== "" && positionvalue2 !== "" && positionvalue3 !== "" && positionvalue1 === positionvalue2 && positionvalue2 === positionvalue3) {
+                        boxes[pattern[0]].style.background = 'Green';
+                        boxes[pattern[1]].style.background = 'Green';
+                        boxes[pattern[2]].style.background = 'Green';
+                        showWinner(positionvalue1);
+                        eitherwin = true;
+                        return;
+                    }
+                }
+                if (!eitherwin) {
+                    const allBoxes = [...boxes].every((box) => box.innerHTML !== "");
+                    if (allBoxes) {
+                        messagecontainer.classList.remove('hide');
+                        msg.innerText = 'Match Drawn, You Guys are Equal';
+                    }
+                }
+            };
+
+            // AI Logic
+            function aiPlay() {
+                let emptyBoxes = [...boxes].filter(box => box.innerText === "");
+                if (emptyBoxes.length === 0) return;
+
+                for (let pattern of winnerPattern) {
+                    let [a, b, c] = pattern;
+                    let values = [boxes[a].innerText, boxes[b].innerText, boxes[c].innerText];
+
+                    if (values.filter(val => val === "X").length === 2 && values.includes("")) {
+                        let emptyIndex = values.indexOf("");
+                        boxes[pattern[emptyIndex]].innerText = "X";
+                        boxes[pattern[emptyIndex]].style.color = "red";
+                        boxes[pattern[emptyIndex]].disabled = true;
+                        turnO = true;
+                        checkWinner();
+                        return;
+                    }
+                }
+
+                for (let pattern of winnerPattern) {
+                    let [a, b, c] = pattern;
+                    let values = [boxes[a].innerText, boxes[b].innerText, boxes[c].innerText];
+
+                    if (values.filter(val => val === "O").length === 2 && values.includes("")) {
+                        let emptyIndex = values.indexOf("");
+                        boxes[pattern[emptyIndex]].innerText = "X";
+                        boxes[pattern[emptyIndex]].style.color = "red";
+                        boxes[pattern[emptyIndex]].disabled = true;
+                        turnO = true;
+                        checkWinner();
+                        return;
+                    }
+                }
+
+                let aiBox = emptyBoxes[Math.floor(Math.random() * emptyBoxes.length)];
+                aiBox.innerText = "X";
+                aiBox.style.color = "red";
+                aiBox.disabled = true;
+                turnO = true;
+                checkWinner();
+            }
+
+            const resetGame = () => {
+                turnO = true;
+                enableBoxes();
+                messagecontainer.classList.add('hide');
+            };
+
+            resetbtn.addEventListener('click', resetGame);
+        });
+    </script>
+    </script>
+</body>
+</html>

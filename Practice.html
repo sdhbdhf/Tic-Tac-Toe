@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS Practice </title>
+    
+</head>
+<body>
+    <input type="text" name="name" id="cityInput">
+    <button id="fetchWeather">Search</button>
+    <div id="weatherResult"></div>
+    <script>
+       const apiKey='9e6fd36be6534a83a4ff0a2451884a25';
+       document.getElementById("fetchWeather").addEventListener("click",async ()=>{
+        const city=document.getElementById("cityInput").value;
+            if(!city)
+                {
+                    alert("Please Enter Valid City");
+                    return;
+                }
+            try{
+                const response=await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`);
+                if(!response.ok){
+                    throw new Error("City not found check your spelling or use valid state");
+                }
+                const data=await response.json();
+                const weatherResult=document.getElementById("weatherResult");
+                weatherResult.innerHTML=`
+                <p>Temprature in ${city} is ${(data.main.temp-273).toFixed(2)} °C
+                <p>Weather: ${data.weather[0].description}</p>
+                <p><strong>Humidity:</strong> ${data.main.humidity}%</p>
+                    <p><strong>Wind Speed:</strong> ${data.wind.speed} m/s</p>`;
+            }catch{
+                console.log("Error:",error);
+                
+            }
+       });
+    </script>
+</body>
+</html>
